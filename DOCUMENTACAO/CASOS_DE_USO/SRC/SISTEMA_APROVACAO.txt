@@ -1,0 +1,25 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Administrador
+actor Usuario
+
+package "Sistema de Fluxos de Aprovação" {
+  
+  usecase "CRUD de Usuários\n(RF01)" as UC01
+  usecase "CRUD de Fluxos Padrões\n(RF02)" as UC02
+  usecase "Movimentações dos Fluxos\n(RF03)" as UC03
+  usecase "Sistema de Assinaturas (Freemium)\n(RF04)" as UC04
+  usecase "Rastreabilidade de Fluxos\n(RF05)" as UC05
+
+}
+
+Administrador --> UC01
+Administrador --> UC02
+Usuario --> UC03
+Administrador --> UC04
+Administrador --> UC05
+Usuario --> UC05
+
+@enduml
