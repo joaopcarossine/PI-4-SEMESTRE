@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h2>Bem-vindo(a), {{ request.user.username }}!</h2>
+
+    <p>Esta é a página inicial do sistema.</p>
+
+    <a href="{% url 'logout' %}">Sair</a>
+</body>
+</html>
