@@ -58,3 +58,8 @@ class UsuarioEditForm(forms.ModelForm):
             raise forms.ValidationError('Este nome de usuário já está em uso.')
         return username
 
+class SetorForm(forms.ModelForm):
+    class Meta:
+        model = Setor
+        fields = ['nome', 'descricao']
+

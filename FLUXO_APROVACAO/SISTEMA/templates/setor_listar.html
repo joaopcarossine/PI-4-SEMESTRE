@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <h2>Setores</h2>
+    <a href="{% url 'criar_setor' %}">+ Novo Setor</a>
+    <table border="1" cellspacing="0" cellpadding="5">
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Criado em</th>
+            <th>Ações</th>
+        </tr>
+        {% for setor in setores %}
+        <tr>
+            <td>{{ setor.id }}</td>
+            <td>{{ setor.nome }}</td>
+            <td>{{ setor.descricao }}</td>
+            <td>{{ setor.criado_em|date:"d/m/Y H:i" }}</td>
+            <td>
+                <a href="{% url 'editar_setor' setor.id %}">Editar</a> |
+                <a href="{% url 'deletar_setor' setor.id %}">Excluir</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">Nenhum setor cadastrado.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+
+</body>
+
+</html>

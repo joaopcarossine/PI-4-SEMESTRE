@@ -3,9 +3,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import LoginForm, UsuarioCreateForm, UsuarioEditForm
-from .models import Usuario
+from .forms import LoginForm, UsuarioCreateForm, UsuarioEditForm, SetorForm
+from .models import Usuario, Setor
 
+## Login
 def login_view(request):
     form = LoginForm(request.POST or None)
 
@@ -30,6 +31,7 @@ def logout_view(request):
 def home_view(request):
     return render(request, "home.html")
 
+## CRUD do Usuário
 @login_required
 def criar_usuario(request):
     if request.method == 'POST':
@@ -37,7 +39,7 @@ def criar_usuario(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Usuário criado com sucesso!')
-            return redirect('listar_usuarios')  # ajuste para sua rota de listagem
+            return redirect('listar_usuarios')  
         else:
             messages.error(request, 'Erro ao criar usuário. Verifique os campos.')
     else:
@@ -70,4 +72,41 @@ def deletar_usuario(request, id):
         usuario.delete()
         return redirect('listar_usuarios')
     return render(request, 'usuario_excluir.html', {'usuario': usuario})
+
+## CRUD do Setor
+login_required
+def listar_setores(request):
+    setores = Setor.objects.all().order_by('nome')
+    return render(request, 'setor_listar.html', {'setores': setores})
+
+@login_required
+def criar_setor(request):
+    if request.method == 'POST':
+        form = SetorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('listar_setores')
+    else:
+        form = SetorForm()
+    return render(request, 'setor_criar.html', {'form': form, 'titulo': 'Criar Setor'})
+
+@login_required
+def editar_setor(request, id):
+    setor = get_object_or_404(Setor, id=id)
+    if request.method == 'POST':
+        form = SetorForm(request.POST, instance=setor)
+        if form.is_valid():
+            form.save()
+            return redirect('listar_setores')
+    else:
+        form = SetorForm(instance=setor)
+    return render(request, 'setor_criar.html', {'form': form, 'titulo': 'Editar Setor'})
+
+@login_required
+def deletar_setor(request, id):
+    setor = get_object_or_404(Setor, id=id)
+    if request.method == 'POST':
+        setor.delete()
+        return redirect('listar_setores')
+    return render(request, 'setor_excluir.html', {'setor': setor})
     
