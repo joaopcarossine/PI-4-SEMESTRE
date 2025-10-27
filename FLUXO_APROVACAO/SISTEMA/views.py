@@ -3,8 +3,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import LoginForm, UsuarioCreateForm, UsuarioEditForm, SetorForm
-from .models import Usuario, Setor
+from django.utils import timezone
+from .forms import LoginForm, UsuarioCreateForm, UsuarioEditForm, SetorForm, FluxoPadraoForm
+from .models import Usuario, Setor, FluxoPadrao, EtapaFluxo
 
 ## Login
 def login_view(request):
@@ -110,3 +111,44 @@ def deletar_setor(request, id):
         return redirect('listar_setores')
     return render(request, 'setor_excluir.html', {'setor': setor})
     
+@login_required
+def listar_modelos_fluxo(request):
+    fluxos = FluxoPadrao.objects.all().order_by('-criado_em')
+    return render(request, 'modelos_fluxo_listar.html', {'fluxos': fluxos})
+
+@login_required
+def criar_modelos_fluxo(request):
+    if request.method == 'POST':
+        form = FluxoPadraoForm(request.POST)
+        if form.is_valid():
+            fluxo = form.save(commit=False)
+            fluxo.criado_por = request.user
+            fluxo.save()
+
+            # Cria as etapas dinamicamente conforme os campos enviados
+            etapas_total = int(request.POST.get('num_etapas', 0))
+            for i in range(1, etapas_total + 1):
+                nome = request.POST.get(f'etapa_nome_{i}')
+                setor_id = request.POST.get(f'etapa_setor_{i}')
+                if nome:
+                    EtapaFluxo.objects.create(
+                        fluxo=fluxo,
+                        ordem_etapa=i,
+                        nome=nome,
+                        setor_id=setor_id if setor_id else None,
+                        criado_em=timezone.now()
+                    )
+            messages.success(request, 'Fluxo modelo criado com sucesso!')
+            return redirect('listar_modelos_fluxo')
+    else:
+        form = FluxoPadraoForm()
+    return render(request, 'modelos_fluxo_criar.html', {'form': form, 'setores': Setor.objects.all()})
+
+@login_required
+def excluir_modelos_fluxo(request, id):
+    fluxo = get_object_or_404(FluxoPadrao, id=id)
+    if request.method == 'POST':
+        fluxo.delete()
+        messages.success(request, 'Modelo de fluxo excluído com sucesso.')
+        return redirect('listar_modelos_fluxo')
+    return render(request, 'modelos_fluxo_excluir.html', {'fluxo': fluxo})

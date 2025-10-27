@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h2>Modelos de Fluxo</h2>
+    <a href="{% url 'criar_modelos_fluxo' %}">+ Criar novo modelo</a>
+    <hr>
+
+    {% if fluxos %}
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Etapas</th>
+            <th>Criado por</th>
+            <th>Ações</th>
+        </tr>
+        {% for fluxo in fluxos %}
+        <tr>
+            <td>{{ fluxo.nome }}</td>
+            <td>{{ fluxo.descricao|default:"—" }}</td>
+            <td>{{ fluxo.etapas.count }}</td>
+            <td>{{ fluxo.criado_por.username|default:"—" }}</td>
+            <td>
+                <form action="{% url 'excluir_modelos_fluxo' fluxo.id %}" method="get" style="display:inline;">
+                    <button type="submit">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Nenhum modelo de fluxo cadastrado ainda.</p>
+    {% endif %}
+</body>
+
+</html>

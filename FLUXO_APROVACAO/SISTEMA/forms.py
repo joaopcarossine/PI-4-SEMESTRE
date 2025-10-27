@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
-from .models import Usuario, Setor
+from .models import Usuario, Setor, FluxoPadrao
 
 
 class LoginForm(forms.Form):
@@ -63,3 +63,11 @@ class SetorForm(forms.ModelForm):
         model = Setor
         fields = ['nome', 'descricao']
 
+class FluxoPadraoForm(forms.ModelForm):
+    class Meta:
+        model = FluxoPadrao
+        fields = ['nome', 'descricao']
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Criar Modelo de Fluxo</title>
+</head>
+
+<body>
+    <h2>Criar Modelo de Fluxo</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <label for="num_etapas">Número de etapas:</label>
+        <input type="number" id="num_etapas" name="num_etapas" min="1" max="10" onchange="gerarCampos()" required>
+        <div id="etapas_container"></div>
+        <br>
+        <button type="submit">Salvar Modelo</button>
+        <a href="{% url 'listar_modelos_fluxo' %}">Cancelar</a>
+    </form>
+</body>
+
+<script>
+    function gerarCampos() {
+        const container = document.getElementById('etapas_container');
+        const qtd = parseInt(document.getElementById('num_etapas').value);
+        container.innerHTML = '';
+        for (let i = 1; i <= qtd; i++) {
+            container.innerHTML += `
+                    <fieldset style="margin-top:10px; padding:10px; border:1px solid #ccc;">
+                        <legend>Etapa ${i}</legend>
+                        <label>Nome da Etapa:</label><br>
+                        <input type="text" name="etapa_nome_${i}" required><br>
+                        <label>Setor:</label><br>
+                        <select name="etapa_setor_${i}">
+                            <option value="">—</option>
+                            {% for setor in setores %}
+                                <option value="{{ setor.id }}">{{ setor.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </fieldset>
+                `;
+        }
+    }
+</script>
+
+</html>

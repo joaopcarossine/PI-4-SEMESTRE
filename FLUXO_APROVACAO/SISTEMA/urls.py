@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import login_view, home_view, logout_view, criar_usuario, listar_usuarios, editar_usuario, deletar_usuario, listar_setores, criar_setor, editar_setor, deletar_setor
+from .views import login_view, home_view, logout_view, criar_usuario, listar_usuarios, editar_usuario, deletar_usuario, listar_setores, criar_setor, editar_setor, deletar_setor, listar_modelos_fluxo, criar_modelos_fluxo, excluir_modelos_fluxo
 
 urlpatterns = [
     path('login/', login_view, name='login'),
@@ -12,5 +12,8 @@ urlpatterns = [
     path('setores/', listar_setores, name='listar_setores'),
     path('setores/criar/', criar_setor, name='criar_setor'),
     path('setores/editar/<int:id>/', editar_setor, name='editar_setor'),
-    path('setores/deletar/<int:id>/', deletar_setor, name='deletar_setor'),    
+    path('setores/deletar/<int:id>/', deletar_setor, name='deletar_setor'),
+    path('fluxos/modelos/', listar_modelos_fluxo, name='listar_modelos_fluxo'),
+    path('fluxos/modelos/novo/', criar_modelos_fluxo, name='criar_modelos_fluxo'),
+    path('fluxos/modelos/excluir/<int:id>/', excluir_modelos_fluxo, name='excluir_modelos_fluxo'),    
 ]
