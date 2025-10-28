@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import login_view, home_view, logout_view, criar_usuario, listar_usuarios, editar_usuario, deletar_usuario, listar_setores, criar_setor, editar_setor, deletar_setor, listar_modelos_fluxo, criar_modelos_fluxo, excluir_modelos_fluxo
+from .views import login_view, home_view, logout_view, criar_usuario, listar_usuarios, editar_usuario, deletar_usuario, listar_setores, criar_setor, editar_setor, deletar_setor, listar_modelos_fluxo, criar_modelos_fluxo, excluir_modelos_fluxo, listar_instancias_fluxo, criar_instancia_fluxo, excluir_instancias_fluxo
 
 urlpatterns = [
     path('login/', login_view, name='login'),
@@ -15,5 +15,9 @@ urlpatterns = [
     path('setores/deletar/<int:id>/', deletar_setor, name='deletar_setor'),
     path('fluxos/modelos/', listar_modelos_fluxo, name='listar_modelos_fluxo'),
     path('fluxos/modelos/novo/', criar_modelos_fluxo, name='criar_modelos_fluxo'),
-    path('fluxos/modelos/excluir/<int:id>/', excluir_modelos_fluxo, name='excluir_modelos_fluxo'),    
+    path('fluxos/modelos/excluir/<int:id>/', excluir_modelos_fluxo, name='excluir_modelos_fluxo'),
+    path('fluxos/instancias/', listar_instancias_fluxo, name='listar_instancias_fluxo'),
+    path('fluxos/instancias/novo/', criar_instancia_fluxo, name='criar_instancia_fluxo'),
+    path('fluxos/instancias/excluir/<int:id>/', excluir_instancias_fluxo, name='excluir_instancia_fluxo'),
+    
 ]

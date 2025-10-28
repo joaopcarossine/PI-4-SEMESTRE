@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Criar Instância de Fluxo</title>
+</head>
+<body>
+    <h2>Criar Instância de Fluxo</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <label for="fluxo_padrao">Escolha o Modelo de Fluxo:</label><br>
+            {{ form.fluxo_padrao }}
+        </div>
+        <div>
+            <label for="nome_instancia">Nome da Instância:</label><br>
+            {{ form.nome_instancia }}
+        </div>
+        <br>
+        <button type="submit">Criar Instância</button>
+        <a href="{% url 'listar_instancias_fluxo' %}">Cancelar</a>
+    </form>
+</body>
+</html>

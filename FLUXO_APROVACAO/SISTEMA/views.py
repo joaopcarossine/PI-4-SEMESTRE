@@ -4,8 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from .forms import LoginForm, UsuarioCreateForm, UsuarioEditForm, SetorForm, FluxoPadraoForm
-from .models import Usuario, Setor, FluxoPadrao, EtapaFluxo
+from .forms import LoginForm, UsuarioCreateForm, UsuarioEditForm, SetorForm, FluxoPadraoForm, InstanciaFluxoForm
+from .models import Usuario, Setor, FluxoPadrao, EtapaFluxo, FluxoInstancia, EtapaInstancia
 
 ## Login
 def login_view(request):
@@ -152,3 +152,59 @@ def excluir_modelos_fluxo(request, id):
         messages.success(request, 'Modelo de fluxo excluído com sucesso.')
         return redirect('listar_modelos_fluxo')
     return render(request, 'modelos_fluxo_excluir.html', {'fluxo': fluxo})
+
+@login_required
+def criar_instancia_fluxo(request):
+    if request.method == 'POST':
+        form = InstanciaFluxoForm(request.POST)
+        if form.is_valid():
+            fluxo_padrao = form.cleaned_data['fluxo_padrao']
+            nome_instancia = form.cleaned_data['nome_instancia']
+
+            # Cria a nova instância
+            fluxo_instancia = FluxoInstancia.objects.create(
+                modelo=fluxo_padrao,
+                nome=nome_instancia,
+                criado_por=request.user
+            )
+
+            # Clona as etapas do modelo
+            for i, etapa in enumerate(fluxo_padrao.etapas.all(), start=1):
+                EtapaInstancia.objects.create(
+                    fluxo_instancia=fluxo_instancia,
+                    ordem_etapa=i,
+                    nome=etapa.nome,
+                    setor=etapa.setor,
+                    perfil_aprovador=etapa.perfil_aprovador,
+                    criado_em=timezone.now()
+                )
+
+            messages.success(request, f'Instância "{nome_instancia}" criada com sucesso!')
+            return redirect('listar_instancias_fluxo')
+    else:
+        form = InstanciaFluxoForm()
+
+    return render(request, 'instancia_fluxo_criar.html', {'form': form})
+
+@login_required
+def listar_instancias_fluxo(request):
+    """
+    Lista todas as instâncias de fluxo (fluxos em execução).
+    """
+    instancias = FluxoInstancia.objects.all().order_by('-criado_em')
+    return render(request, 'instancia_fluxo_listar.html', {'instancias': instancias})
+
+@login_required
+def excluir_instancias_fluxo(request, id):
+    """
+    Exclui uma instância de fluxo e suas etapas associadas.
+    """
+    instancia = get_object_or_404(FluxoInstancia, id=id)
+
+    if request.method == 'POST':
+        nome = instancia.nome
+        instancia.delete()
+        messages.success(request, f'Fluxo "{nome}" excluído com sucesso!')
+        return redirect('listar_instancias_fluxo')
+
+    return render(request, 'instancia_fluxo_excluir.html', {'instancia': instancia})

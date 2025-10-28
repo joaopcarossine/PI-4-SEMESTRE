@@ -71,3 +71,7 @@ class FluxoPadraoForm(forms.ModelForm):
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
             'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+class InstanciaFluxoForm(forms.Form):
+    fluxo_padrao = forms.ModelChoiceField(queryset=FluxoPadrao.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+    nome_instancia = forms.CharField(max_length=200, widget=forms.TextInput(attrs={'class': 'form-control'}))

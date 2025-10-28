@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Excluir Instância de Fluxo</title>
+</head>
+<body>
+    <h2>Excluir Instância</h2>
+    <p>Tem certeza que deseja excluir a instância <strong>{{ instancia.nome }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Sim, excluir</button>
+        <a href="{% url 'listar_instancias_fluxo' %}">Cancelar</a>
+    </form>
+</body>
+</html>
