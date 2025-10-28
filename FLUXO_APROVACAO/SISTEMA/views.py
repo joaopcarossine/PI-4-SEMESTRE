@@ -188,11 +188,15 @@ def criar_instancia_fluxo(request):
 
 @login_required
 def listar_instancias_fluxo(request):
-    """
-    Lista todas as instâncias de fluxo (fluxos em execução).
-    """
-    instancias = FluxoInstancia.objects.all().order_by('-criado_em')
-    return render(request, 'instancia_fluxo_listar.html', {'instancias': instancias})
+    """Lista fluxos em andamento e finalizados."""
+    em_andamento = FluxoInstancia.objects.filter(finalizado=False).order_by('-criado_em')
+    finalizados = FluxoInstancia.objects.filter(finalizado=True).order_by('-criado_em')
+
+    return render(request, 'instancia_fluxo_listar.html', {
+        'em_andamento': em_andamento,
+        'finalizados': finalizados,
+    })
+
 
 @login_required
 def excluir_instancias_fluxo(request, id):

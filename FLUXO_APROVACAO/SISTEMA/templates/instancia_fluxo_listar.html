@@ -1,48 +1,142 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-br">
 <head>
-    <meta charset="utf-8">
-    <title>Instâncias de Fluxo</title>
+    <meta charset="UTF-8">
+    <title>Listar Instâncias de Fluxo</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { margin-top: 0; }
+
+        /* Abas */
+        .tab {
+            overflow: hidden;
+            border-bottom: 2px solid #ccc;
+            margin-bottom: 15px;
+        }
+        .tab button {
+            background-color: #f1f1f1;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 10px 20px;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #4287f5;
+            color: white;
+        }
+
+        /* Conteúdo das abas */
+        .tabcontent {
+            display: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            text-decoration: none;
+            color: #4287f5;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
-
 <body>
+
     <h2>Instâncias de Fluxo</h2>
-    <a href="{% url 'criar_instancia_fluxo' %}">+ Criar nova instância</a>
-    <hr>
 
-    {% if instancias %}
-    <table border="1" cellpadding="5" cellspacing="0">
-        <tr>
-            <th>Nome</th>
-            <th>Modelo de Fluxo</th>
-            <th>Status</th>
-            <th>Etapas</th>
-            <th>Ações</th>
-        </tr>
-        {% for instancia in instancias %}
-        <tr>
-            <td>{{ instancia.nome }}</td>
-            <td>{{ instancia.modelo.nome }}</td>
-            <td>
-                {% if instancia.finalizado %}
-                Finalizado
-                {% else %}
-                Pendente
-                {% endif %}
-            </td>
-            <td>{{ instancia.etapas.count }}</td>
-            <td>
-                <form action="{% url 'excluir_instancia_fluxo' instancia.id %}" method="get" style="display:inline;">
-                    <button type="submit">Excluir</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>Nenhuma instância de fluxo criada ainda.</p>
-    {% endif %}
+    <div class="tab">
+        <button class="tablinks active" onclick="openTab(event, 'andamento')">🕒 Em Andamento</button>
+        <button class="tablinks" onclick="openTab(event, 'finalizado')">✅ Finalizados</button>
+    </div>
+
+    <!-- ABA 1: Em andamento -->
+    <div id="andamento" class="tabcontent" style="display:block;">
+        {% if em_andamento %}
+        <table>
+            <tr>
+                <th>Nome</th>
+                <th>Modelo</th>
+                <th>Status</th>
+                <th>Criado em</th>
+                <th>Ações</th>
+            </tr>
+            {% for instancia in em_andamento %}
+            <tr>
+                <td>{{ instancia.nome }}</td>
+                <td>{{ instancia.modelo.nome }}</td>
+                <td>Pendente</td>
+                <td>{{ instancia.criado_em|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'excluir_instancias_fluxo' instancia.id %}">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p>Nenhum fluxo em andamento.</p>
+        {% endif %}
+    </div>
+
+    <!-- ABA 2: Finalizados -->
+    <div id="finalizado" class="tabcontent">
+        {% if finalizados %}
+        <table>
+            <tr>
+                <th>Nome</th>
+                <th>Modelo</th>
+                <th>Status</th>
+                <th>Finalizado em</th>
+                <th>Ações</th>
+            </tr>
+            {% for instancia in finalizados %}
+            <tr>
+                <td>{{ instancia.nome }}</td>
+                <td>{{ instancia.modelo.nome }}</td>
+                <td>Finalizado</td>
+                <td>{{ instancia.atualizado_em|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'excluir_instancias_fluxo' instancia.id %}">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+            <p>Nenhum fluxo finalizado.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+
 </body>
-
 </html>

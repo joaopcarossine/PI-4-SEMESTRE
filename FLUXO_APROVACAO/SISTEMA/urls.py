@@ -18,6 +18,6 @@ urlpatterns = [
     path('fluxos/modelos/excluir/<int:id>/', excluir_modelos_fluxo, name='excluir_modelos_fluxo'),
     path('fluxos/instancias/', listar_instancias_fluxo, name='listar_instancias_fluxo'),
     path('fluxos/instancias/novo/', criar_instancia_fluxo, name='criar_instancia_fluxo'),
-    path('fluxos/instancias/excluir/<int:id>/', excluir_instancias_fluxo, name='excluir_instancia_fluxo'),
+    path('fluxos/instancias/excluir/<int:id>/', excluir_instancias_fluxo, name='excluir_instancias_fluxo'),
     
 ]
