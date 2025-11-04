@@ -85,6 +85,7 @@
                 <td>{{ instancia.criado_em|date:"d/m/Y H:i" }}</td>
                 <td>
                     <a href="{% url 'excluir_instancias_fluxo' instancia.id %}">Excluir</a>
+                    <a href="{% url 'detalhar_instancia_fluxo' instancia.id %}">Detalhes</a>
                 </td>
             </tr>
             {% endfor %}
@@ -113,6 +114,7 @@
                 <td>{{ instancia.atualizado_em|date:"d/m/Y H:i" }}</td>
                 <td>
                     <a href="{% url 'excluir_instancias_fluxo' instancia.id %}">Excluir</a>
+                    <a href="{% url 'detalhar_instancia_fluxo' instancia.id %}">Detalhes</a>
                 </td>
             </tr>
             {% endfor %}

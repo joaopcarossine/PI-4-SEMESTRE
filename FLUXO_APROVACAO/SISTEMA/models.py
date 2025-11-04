@@ -140,6 +140,7 @@ class FluxoInstancia(models.Model):
     nome = models.CharField(max_length=200)
     criado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True)
     criado_em = models.DateTimeField(default=timezone.now)
+    atualizado_em = models.DateTimeField(auto_now=True)
     finalizado = models.BooleanField(default=False)
 
     class Meta:

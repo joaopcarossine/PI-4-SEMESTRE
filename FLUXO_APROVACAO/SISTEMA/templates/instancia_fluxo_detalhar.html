@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <title>Detalhes da Instância - {{ instancia.nome }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f6f6f8;
+            color: #222;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 20px;
+        }
+
+        .meta {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        /* timeline */
+        .timeline {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 20px 10px;
+        }
+
+        .line {
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            height: 4px;
+            background: #e6e6e6;
+            top: 26px;
+            z-index: 0;
+            border-radius: 2px;
+        }
+
+        .stage {
+            z-index: 2;
+            flex: 1;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-bottom: 6px;
+            border: 3px solid #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        }
+
+        .stage .label {
+            display: block;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .stage .sub {
+            display: block;
+            font-size: 12px;
+            color: #777;
+            margin-top: 3px;
+        }
+
+        /* states */
+        .dot.pending {
+            background: #ddd;
+            border-color: #ddd;
+        }
+
+        .dot.current {
+            background: #4b6cff;
+            border-color: #4b6cff;
+        }
+
+        .dot.done {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        /* modal */
+        .modal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal .box {
+            background: #fff;
+            width: 520px;
+            max-width: 95%;
+            padding: 18px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .modal h3 {
+            margin: 0 0 6px 0;
+        }
+
+        .modal .close {
+            position: absolute;
+            right: 12px;
+            top: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #666;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 90px;
+            padding: 8px;
+            box-sizing: border-box;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+
+        .actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .btn-return {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-advance {
+            background: #4b6cff;
+            color: #fff;
+        }
+
+        .history {
+            margin-top: 12px;
+        }
+
+        .mov {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .mov small {
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- BOTÃO VOLTAR -->
+    <a href="/fluxos/instancias/" class="btn-voltar">← Voltar</a>
+
+    <div class="card">
+        <h1>{{ instancia.nome }}</h1>
+        <div class="meta">
+            Modelo: <strong>{{ instancia.modelo.nome }}</strong> |
+            Status: <strong>{% if instancia.finalizado %}Finalizado{% else %}Em andamento{% endif %}</strong> |
+            Criado em: {{ instancia.criado_em|date:"d/m/Y H:i" }}
+        </div>
+
+        <div style="position:relative;">
+            <div class="line" aria-hidden="true"></div>
+
+            <div class="timeline" id="timeline">
+                {% for etapa in etapas %}
+                
+                <div class="stage" 
+                    data-etapa-id="{{ etapa.id }}" 
+                    data-ordem="{{ etapa.ordem_etapa }}"
+                    onclick="abrirModal(this)">
+                    
+                    <span class="dot 
+                        {% if etapa.concluida %}done
+                        {% elif etapa.id == etapa_atual.id %}current
+                        {% else %}pending
+                        {% endif %}"></span>
+
+                    <span class="label">{{ etapa.nome }}</span>
+                    <span class="sub">Setor: {{ etapa.setor.nome|default:'—' }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Histórico</h3>
+        <div class="history">
+            {% for m in movimentacoes %}
+            <div class="mov">
+                <div>
+                    <strong>{{ m.acao.nome|default:'—' }}</strong> — {{ m.etapa.nome|default:'—' }}
+                </div>
+                <div>
+                    <small>{{ m.usuario.username|default:'Sistema' }} • {{ m.data_acao|date:"d/m/Y H:i" }}</small>
+                </div>
+                {% if m.comentario %}
+                <div style="margin-top:6px;">{{ m.comentario }}</div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p>Sem movimentações ainda.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="modal" class="modal" role="dialog" aria-hidden="true">
+        <div class="box">
+            <span class="close" onclick="fecharModal()">×</span>
+            <h3 id="modal-titulo">Etapa</h3>
+            <p><small id="modal-setor"></small></p>
+
+            <form id="form-mover" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="dummy" value="1">
+                <label>Comentário (opcional)</label>
+                <textarea name="comentario" id="modal-comentario"></textarea>
+
+                <div class="actions">
+                    <button type="button" class="btn-return" id="btn-retornar"
+                        onclick="submitMover('retornar')">Retornar</button>
+                    <button type="button" class="btn-advance" id="btn-avancar"
+                        onclick="submitMover('avancar')">Avançar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // abrir modal e configurar form action dinamicamente
+        function abrirModal(el) {
+            const etapaId = el.getAttribute('data-etapa-id');
+            const ordem = parseInt(el.getAttribute('data-ordem'));
+            const titulo = el.querySelector('.label').innerText;
+            const setor = el.querySelector('.sub').innerText;
+
+            // preencher modal
+            document.getElementById('modal-titulo').innerText = titulo;
+            document.getElementById('modal-setor').innerText = setor;
+            document.getElementById('modal-comentario').value = '';
+
+            // configurar action do form para a URL mover_etapa
+            const instanciaId = "{{ instancia.id }}";
+            const form = document.getElementById('form-mover');
+
+            // CORREÇÃO DE URL: Usamos números longos únicos e substituímos separadamente
+            // Sua URL é: path('fluxos/instancias/<int:instancia_id>/mover/<int:etapa_id>/', mover_etapa, name='mover_etapa'),
+            let urlTemplate = "{% url 'mover_etapa' instancia_id=99999 etapa_id=88888 %}";
+            let finalUrl = urlTemplate.replace('99999', instanciaId).replace('88888', etapaId);
+            
+            form.action = finalUrl;
+
+            // Condições de habilitar/desabilitar botões
+            const btnRet = document.getElementById('btn-retornar');
+            const btnAv = document.getElementById('btn-avancar');
+
+            // se primeira etapa -> desabilitar retornar
+            if (ordem === 1) {
+                btnRet.disabled = true;
+                btnRet.style.opacity = 0.6;
+            } else {
+                btnRet.disabled = false;
+                btnRet.style.opacity = 1;
+            }
+
+            btnRet.dataset.etapa = etapaId;
+            btnAv.dataset.etapa = etapaId;
+
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function submitMover(acao) {
+            const form = document.getElementById('form-mover');
+            // criar input hidden para ação
+            let inp = document.querySelector('input[name="acao"]');
+            if (!inp) {
+                inp = document.createElement('input');
+                inp.type = 'hidden';
+                inp.name = 'acao';
+                form.appendChild(inp);
+            }
+            inp.value = acao;
+            form.submit();
+        }
+
+        // fechar modal ao clicar fora
+        window.addEventListener('click', function (e) {
+            const modal = document.getElementById('modal');
+            if (e.target === modal) fecharModal();
+        });
+    </script>
+</body>
+
+</html>

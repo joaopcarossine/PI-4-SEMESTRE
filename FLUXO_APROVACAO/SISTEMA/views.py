@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import LoginForm, UsuarioCreateForm, UsuarioEditForm, SetorForm, FluxoPadraoForm, InstanciaFluxoForm
-from .models import Usuario, Setor, FluxoPadrao, EtapaFluxo, FluxoInstancia, EtapaInstancia
+from .models import Usuario, Setor, FluxoPadrao, EtapaFluxo, FluxoInstancia, EtapaInstancia, MovimentacaoFluxo, AcaoFluxo
 
 ## Login
 def login_view(request):
@@ -212,3 +212,131 @@ def excluir_instancias_fluxo(request, id):
         return redirect('listar_instancias_fluxo')
 
     return render(request, 'instancia_fluxo_excluir.html', {'instancia': instancia})
+
+@login_required
+def detalhar_instancia_fluxo(request, id):
+    """
+    Mostra detalhes de uma instância de fluxo, timeline (etapas) e histórico.
+    """
+    instancia = get_object_or_404(FluxoInstancia, id=id)
+    # carregar etapas da instância em ordem
+    etapas = instancia.etapas.order_by('ordem_etapa')
+
+    # garantir que se todas as etapas estiverem concluídas o fluxo seja marcado finalizado
+    if etapas.exists() and all(e.concluida for e in etapas):
+        if not instancia.finalizado:
+            instancia.finalizado = True
+            instancia.save()
+
+    # encontrar etapa atual: primeira etapa não concluída
+    etapa_atual = None
+    for e in etapas:
+        if not e.concluida:
+            etapa_atual = e
+            break
+
+    # carregar histórico
+    movimentacoes = instancia.movimentacoes.order_by('-data_acao')
+
+    return render(request, 'instancia_fluxo_detalhar.html', {
+        'instancia': instancia,
+        'etapas': etapas,
+        'etapa_atual': etapa_atual,
+        'movimentacoes': movimentacoes,
+    })
+
+
+@login_required
+def mover_etapa(request, instancia_id, etapa_id):
+    """
+    Recebe POST com acao in ('avancar','retornar') e comentario.
+    Realiza a movimentação, atualiza EtapaInstancia e FluxoInstancia e registra MovimentacaoFluxo.
+    """
+    if request.method != 'POST':
+        return redirect('detalhar_instancia_fluxo', id=instancia_id)
+
+    instancia = get_object_or_404(FluxoInstancia, id=instancia_id)
+    etapa = get_object_or_404(EtapaInstancia, id=etapa_id, fluxo_instancia=instancia)
+
+    acao_nome = request.POST.get('acao')
+    comentario = request.POST.get('comentario', '').strip()
+
+    # garantir objetos de ação (nome em pt: Avançar / Retornar)
+    acao_avancar, _ = AcaoFluxo.objects.get_or_create(nome='Avançar')
+    acao_retornar, _ = AcaoFluxo.objects.get_or_create(nome='Retornar')
+
+    if acao_nome == 'avancar':
+        # se já foi concluída, não faz nada
+        if etapa.concluida:
+            messages.warning(request, 'Esta etapa já está concluída.')
+            return redirect('detalhar_instancia_fluxo', id=instancia.id)
+
+        # marcar etapa atual como concluída
+        etapa.concluida = True
+        etapa.save()
+
+        # criar movimentação
+        MovimentacaoFluxo.objects.create(
+            fluxo_instancia=instancia,
+            etapa=etapa,
+            usuario=request.user,
+            acao=acao_avancar,
+            comentario=comentario,
+            data_acao=timezone.now()
+        )
+
+        # ver se existe próxima etapa
+        proximas = instancia.etapas.filter(ordem_etapa__gt=etapa.ordem_etapa).order_by('ordem_etapa')
+        if not proximas.exists():
+            # se não há próxima etapa, finalizar o fluxo
+            instancia.finalizado = True
+            instancia.save()
+            messages.success(request, f'Instância "{instancia.nome}" finalizada.')
+        else:
+            # próxima etapa ficará como pendente (já está criada como pendente por padrão)
+            prox = proximas.first()
+            messages.success(request, f'Instância avançada para etapa "{prox.nome}".')
+
+        return redirect('detalhar_instancia_fluxo', id=instancia.id)
+
+    elif acao_nome == 'retornar':
+        # não é possível retornar da primeira etapa
+        if etapa.ordem_etapa == 1:
+            messages.warning(request, 'Não é possível retornar: esta é a primeira etapa.')
+            return redirect('detalhar_instancia_fluxo', id=instancia.id)
+
+        # encontra etapa anterior
+        anterior = instancia.etapas.filter(ordem_etapa=etapa.ordem_etapa - 1).first()
+        if not anterior:
+            messages.error(request, 'Etapa anterior não encontrada.')
+            return redirect('detalhar_instancia_fluxo', id=instancia.id)
+
+        # marcar etapa atual como não concluída (reabre) e também reabrir anterior
+        etapa.concluida = False
+        etapa.save()
+
+        anterior.concluida = False
+        anterior.save()
+
+        # se estava finalizado, desfaz finalizado
+        if instancia.finalizado:
+            instancia.finalizado = False
+            instancia.save()
+
+        # registrar movimentação
+        MovimentacaoFluxo.objects.create(
+            fluxo_instancia=instancia,
+            etapa=anterior,
+            usuario=request.user,
+            acao=acao_retornar,
+            comentario=comentario,
+            data_acao=timezone.now()
+        )
+
+        messages.success(request, f'Instância retornada para etapa "{anterior.nome}".')
+        return redirect('detalhar_instancia_fluxo', id=instancia.id)
+
+    else:
+        messages.error(request, 'Ação inválida.')
+        return redirect('detalhar_instancia_fluxo', id=instancia.id)
+
