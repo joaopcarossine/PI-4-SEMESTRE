@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,15 +7,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+    </style>
 </head>
 
 <body>
-    <h2>Modelos de Fluxo</h2>
-    <a href="{% url 'criar_modelos_fluxo' %}">+ Criar novo modelo</a>
+
+    {% include 'sidebar.html' %}
+    <div class="main-content">
+<div class="top-bar">
+    <h1> <img class="main-img" src="\static\img\flou.png"> Modelos de Fluxo</h1>
+
+<input type="text" id="pesquisa-universal" class="input-pesquisa" placeholder="🔍︎ Pesquisar..." onkeyup="filtrarUniversal()">
+
+    <a class="right-top-button" href="{% url 'criar_modelos_fluxo' %}"> <img style="width: 17px;height: 17px; padding-right:10px;" src="\static\img\add.png"> Adicionar </a>
+</div>
+
     <hr>
+
+
+    
 
     {% if fluxos %}
     <table border="1" cellpadding="5" cellspacing="0">
+
+
+
         <tr>
             <th>Nome</th>
             <th>Descrição</th>
@@ -29,7 +50,7 @@
             <td>{{ fluxo.criado_por.username|default:"—" }}</td>
             <td>
                 <form action="{% url 'excluir_modelos_fluxo' fluxo.id %}" method="get" style="display:inline;">
-                    <button type="submit">Excluir</button>
+                    <button class="delete-button" type="submit"> <img src="\static\img\trash.png"> Excluir</button>
                 </form>
             </td>
         </tr>
@@ -38,6 +59,30 @@
     {% else %}
     <p>Nenhum modelo de fluxo cadastrado ainda.</p>
     {% endif %}
+
+    </div>
+    <script>
+function filtrarUniversal() {
+    let filtro = document.getElementById("pesquisa-universal").value.toLowerCase();
+    let tabela = document.querySelector("table");
+
+    if (!tabela) return;
+
+    let linhas = tabela.getElementsByTagName("tr");
+
+    for (let i = 1; i < linhas.length; i++) {
+        let colunas = linhas[i].getElementsByTagName("td");
+        let textoLinha = "";
+
+        for (let c = 0; c < colunas.length; c++) {
+            textoLinha += colunas[c].innerText.toLowerCase() + " ";
+        }
+
+        linhas[i].style.display = textoLinha.includes(filtro) ? "" : "none";
+    }
+}
+</script>
+
 </body>
 
 </html>

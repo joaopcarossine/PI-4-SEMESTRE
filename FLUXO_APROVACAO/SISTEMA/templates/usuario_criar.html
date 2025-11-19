@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,11 +6,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+    </style>
 </head>
 
 <body>
-    <div class="container mt-4">
-        <h2>Criar Usuário</h2>
+
+    {% include 'sidebar.html' %}
+    <div class="main-content">
+<div class="criar">
+        <h1> <a href="{% url 'listar_usuarios' %}"> <img style="width: 30px; height: 30px; padding-right: 3px;" src="/static/img/back.png" > </a> Criar Usuário</h1>
         <hr>
 
         {% if messages %}
@@ -21,9 +29,11 @@
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Salvar</button>
-            <a href="{% url 'listar_usuarios' %}" class="btn btn-secondary">Voltar</a>
+            <button type="submit" class="blue-button">Criar Usuário</button>
         </form>
+
+    
+    </div>
     </div>
 </body>
 

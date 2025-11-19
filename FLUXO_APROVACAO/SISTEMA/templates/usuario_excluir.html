@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,17 +6,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+    </style>
 </head>
 
 <body>
-    <div class="container mt-4">
-        <h3>Tem certeza que deseja excluir o usuário <b>{{ usuario.username }}</b>?</h3>
+    
+        <h2>Tem certeza que deseja excluir o usuário <b>{{ usuario.username }}</b>?</h2>
+        
         <form method="POST">
+            <div class="delete">
             {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Excluir</button>
-            <a href="{% url 'listar_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="delete-button">Excluir</button>
+            <a href="{% url 'listar_usuarios' %}" class="a-detalhes">Cancelar</a>
+            </div>
         </form>
-    </div>
+    
 </body>
 
 </html>
