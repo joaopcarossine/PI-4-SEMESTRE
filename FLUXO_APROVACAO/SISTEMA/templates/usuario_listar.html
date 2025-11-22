@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,11 +6,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+    </style>
 </head>
 
-<div class="container mt-4">
-    <h2>Lista de Usuários</h2>
-    <a href="{% url 'criar_usuario' %}" class="btn btn-success mb-3">+ Novo Usuário</a>
+<body>
+
+    {% include 'sidebar.html' %}
+    <div class="main-content">
+
+<div class="top-bar">
+    <h1> <img class="main-img" src="\static\img\users.png"> Lista de Usuários</h1>
+
+    <input type="text" id="pesquisa-universal" class="input-pesquisa" placeholder="🔍︎ Pesquisar..." onkeyup="filtrarUniversal()">
+
+    <a href="{% url 'criar_usuario' %}" class="right-top-button"> <img style="width: 17px;height: 17px; padding-right:10px;" src="\static\img\add.png"> Adicionar</a>
+
+    </div>
+    <hr>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -26,13 +42,37 @@
                 <td>{{ usuario.username }}</td>
                 <td>{{ usuario.email }}</td>
                 <td>
-                    <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-primary btn-sm">Editar</a>
-                    <a href="{% url 'deletar_usuario' usuario.id %}" class="btn btn-danger btn-sm">Excluir</a>
+                    <a href="{% url 'editar_usuario' usuario.id %}" class="a-detalhes"> <img src="\static\img\pen.png"> Editar</a>
+                    <a href="{% url 'deletar_usuario' usuario.id %}" class="a-excluir"> <img src="\static\img\trash.png"> Excluir</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-</div>
 
+
+    </div>
+
+    <script>
+function filtrarUniversal() {
+    let filtro = document.getElementById("pesquisa-universal").value.toLowerCase();
+    let tabela = document.querySelector("table");
+
+    if (!tabela) return;
+
+    let linhas = tabela.getElementsByTagName("tr");
+
+    for (let i = 1; i < linhas.length; i++) {
+        let colunas = linhas[i].getElementsByTagName("td");
+        let textoLinha = "";
+
+        for (let c = 0; c < colunas.length; c++) {
+            textoLinha += colunas[c].innerText.toLowerCase() + " ";
+        }
+
+        linhas[i].style.display = textoLinha.includes(filtro) ? "" : "none";
+    }
+}
+</script>
+</body>
 </html>

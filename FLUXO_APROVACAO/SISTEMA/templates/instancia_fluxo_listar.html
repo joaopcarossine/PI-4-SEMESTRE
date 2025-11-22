@@ -1,75 +1,44 @@
+
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Listar Instâncias de Fluxo</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        h2 { margin-top: 0; }
-
-        /* Abas */
-        .tab {
-            overflow: hidden;
-            border-bottom: 2px solid #ccc;
-            margin-bottom: 15px;
-        }
-        .tab button {
-            background-color: #f1f1f1;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 10px 20px;
-            transition: 0.2s;
-            font-weight: bold;
-        }
-        .tab button:hover {
-            background-color: #ddd;
-        }
-        .tab button.active {
-            background-color: #4287f5;
-            color: white;
-        }
-
-        /* Conteúdo das abas */
-        .tabcontent {
-            display: none;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 10px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        a {
-            text-decoration: none;
-            color: #4287f5;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
     </style>
+    
 </head>
 <body>
 
-    <h2>Instâncias de Fluxo</h2>
+
+    {% include 'sidebar.html' %}
+    <div class="main-content">
+
+    <h1> <img class="main-img" src="\static\img\flow.png"> Instâncias de Fluxo</h1>
+
+    
 
     <div class="tab">
-        <button class="tablinks active" onclick="openTab(event, 'andamento')">🕒 Em Andamento</button>
-        <button class="tablinks" onclick="openTab(event, 'finalizado')">✅ Finalizados</button>
+        <button class="tablinks active" onclick="openTab(event, 'andamento')"> Andamento</button>
+        <button class="tablinks" onclick="openTab(event, 'finalizado')"> Finalizados</button>
+
+
+          <input type="text" id="pesquisa-universal" class="input-pesquisa" placeholder="🔍︎ Pesquisar..." onkeyup="filtrarUniversal()">
+
+        <a class="right-top-button" href="{% url 'criar_instancia_fluxo' %}"> <img style="width: 17px;height: 17px; padding-right:10px;" src="\static\img\add.png"> Adicionar</a>
     </div>
+
+   
 
     <!-- ABA 1: Em andamento -->
     <div id="andamento" class="tabcontent" style="display:block;">
         {% if em_andamento %}
+        
         <table>
+
             <tr>
                 <th>Nome</th>
                 <th>Modelo</th>
@@ -84,8 +53,11 @@
                 <td>Pendente</td>
                 <td>{{ instancia.criado_em|date:"d/m/Y H:i" }}</td>
                 <td>
-                    <a href="{% url 'excluir_instancias_fluxo' instancia.id %}">Excluir</a>
-                    <a href="{% url 'detalhar_instancia_fluxo' instancia.id %}">Detalhes</a>
+
+                    <a class="a-detalhes" href="{% url 'detalhar_instancia_fluxo' instancia.id %}"> <img src="\static\img\eye.png">Detalhes </a>
+
+                    <a class="a-excluir" href="{% url 'excluir_instancias_fluxo' instancia.id %}"> <img src="\static\img\trash.png">Excluir </a>
+
                 </td>
             </tr>
             {% endfor %}
@@ -113,8 +85,11 @@
                 <td>Finalizado</td>
                 <td>{{ instancia.atualizado_em|date:"d/m/Y H:i" }}</td>
                 <td>
-                    <a href="{% url 'excluir_instancias_fluxo' instancia.id %}">Excluir</a>
-                    <a href="{% url 'detalhar_instancia_fluxo' instancia.id %}">Detalhes</a>
+
+                    <a class="a-detalhes" href="{% url 'detalhar_instancia_fluxo' instancia.id %}"> <img src="\static\img\eye.png"> Detalhes</a>
+
+                    <a class="a-excluir" href="{% url 'excluir_instancias_fluxo' instancia.id %}"> <img src="\static\img\trash.png"> Excluir</a>
+                    
                 </td>
             </tr>
             {% endfor %}
@@ -138,7 +113,33 @@
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.classList.add("active");
         }
-    </script>
 
+        function filtrarUniversal() {
+    let filtro = document.getElementById("pesquisa-universal").value.toLowerCase();
+
+    // pega a aba ativa
+    let ativa = document.querySelector(".tablinks.active").innerText.trim().toLowerCase();
+
+    let tabelaId = ativa === "andamento" ? "andamento" : "finalizado";
+    let tabela = document.querySelector(`#${tabelaId} table`);
+
+    if (!tabela) return;
+
+    let linhas = tabela.getElementsByTagName("tr");
+
+    for (let i = 1; i < linhas.length; i++) {
+        let colunas = linhas[i].getElementsByTagName("td");
+        let textoLinha = "";
+
+        for (let c = 0; c < colunas.length; c++) {
+            textoLinha += colunas[c].innerText.toLowerCase() + " ";
+        }
+
+        linhas[i].style.display = textoLinha.includes(filtro) ? "" : "none";
+    }
+}
+
+    </script>
+</div>
 </body>
 </html>

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,15 +6,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+    </style>
 </head>
 
 <body>
+    
     <h2>Excluir Setor</h2>
     <p>Tem certeza que deseja excluir o setor <strong>{{ setor.nome }}</strong>?</p>
     <form method="post">
+        <div class="delete">
         {% csrf_token %}
-        <button type="submit">Sim, excluir</button>
-        <a href="{% url 'listar_setores' %}">Cancelar</a>
+        <button class="delete-button" type="submit">Sim, excluir</button>
+        <a class="a-detalhes" href="{% url 'listar_setores' %}">Cancelar</a>
+        </div>
     </form>
 
 </body>

@@ -1,13 +1,22 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Home</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+    </style>
 </head>
 <body>
-    <h2>Bem-vindo(a), {{ request.user.username }}!</h2>
+{% include 'sidebar.html' %}
 
-    <p>Esta é a página inicial do sistema.</p>
+<div class="main-content">
+    <h2 class="centerTEXT">Bem-vindo(a), {{ request.user.username }}!</h2>
 
-    <a href="{% url 'logout' %}">Sair</a>
+    <p class="centerTEXT" style="color: white; font-size: 25px; margin-top: -50px;">Esta é a página inicial do sistema.</p>
+
+    
+    </div>
 </body>
 </html>

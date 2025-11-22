@@ -4,9 +4,16 @@
 <html>
 <head>
     <title>Login</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+    </style>
 </head>
 <body>
-    <h2>Login</h2>
+    <div class="waves-top"></div>
+    <div class="flow"></div>
+    <div class="login-content">
+    <h2>Faça seu Login</h2>
     {% if messages %}
         {% for message in messages %}
             <p style="color:red;">{{ message }}</p>
@@ -15,8 +22,18 @@
 
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Entrar</button>
+
+    <div class="form-group">
+        {{ form.username.label_tag }}
+        {{ form.username }}
+    </div>
+
+    <div class="form-group">
+        {{ form.password.label_tag }}
+        {{ form.password }}
+    </div>
+        <button class="blue-button-login" type="submit">Entrar</button>
     </form>
+</div>
 </body>
 </html>

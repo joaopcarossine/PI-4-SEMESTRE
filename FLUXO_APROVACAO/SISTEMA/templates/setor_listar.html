@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,13 +6,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+    </style>
 </head>
 
 <body>
 
-    <h2>Setores</h2>
-    <a href="{% url 'criar_setor' %}">+ Novo Setor</a>
-    <table border="1" cellspacing="0" cellpadding="5">
+    {% include 'sidebar.html' %}
+    <div class="main-content">
+<div class="top-bar">
+    <h1> <img class="main-img" src="\static\img\department.png"> Lista de Setores</h1>
+
+    <input type="text" id="pesquisa-universal" class="input-pesquisa" placeholder="🔍︎ Pesquisar..." onkeyup="filtrarUniversal()">
+
+    <a href="{% url 'criar_setor' %}" class="right-top-button" > <img style="width: 17px;height: 17px; padding-right:10px;" src="\static\img\add.png"> Adicionar</a>
+    </div>
+    <hr>
+    <table>
         <tr>
             <th>ID</th>
             <th>Nome</th>
@@ -26,8 +39,8 @@
             <td>{{ setor.descricao }}</td>
             <td>{{ setor.criado_em|date:"d/m/Y H:i" }}</td>
             <td>
-                <a href="{% url 'editar_setor' setor.id %}">Editar</a> |
-                <a href="{% url 'deletar_setor' setor.id %}">Excluir</a>
+                <a href="{% url 'editar_setor' setor.id %}" class="a-detalhes"> <img src="\static\img\pen.png"> Editar</a> 
+                <a href="{% url 'deletar_setor' setor.id %}" class="a-excluir"> <img src="\static\img\trash.png"> Excluir</a>
             </td>
         </tr>
         {% empty %}
@@ -37,7 +50,7 @@
         {% endfor %}
     </table>
 
-
+    </div>
 </body>
 
 </html>
