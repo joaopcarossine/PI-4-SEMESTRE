@@ -5,7 +5,15 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import LoginForm, UsuarioCreateForm, UsuarioEditForm, SetorForm, FluxoPadraoForm, InstanciaFluxoForm
-from .models import Usuario, Setor, FluxoPadrao, EtapaFluxo, FluxoInstancia, EtapaInstancia, MovimentacaoFluxo, AcaoFluxo
+from .models import Usuario, Setor, FluxoPadrao, EtapaFluxo, FluxoInstancia, EtapaInstancia, MovimentacaoFluxo, AcaoFluxo, Assinatura
+from django.conf import settings
+from abacatepay import AbacatePay, AbacatePayClient
+from abacatepay.products import Product
+import os, requests
+from django.http import HttpResponse
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 ## Login
 def login_view(request):
@@ -340,3 +348,156 @@ def mover_etapa(request, instancia_id, etapa_id):
         messages.error(request, 'Ação inválida.')
         return redirect('detalhar_instancia_fluxo', id=instancia.id)
 
+ABACATE_URL = "https://api.abacatepay.com/v1/billing/create"
+API_KEY = os.getenv("ABACATEPAY_API_KEY") or getattr(settings, "ABACATEPAY_API_KEY", None)
+
+@login_required
+def assinatura_view(request):
+    return render(request, 'assinaturas.html')  
+
+@login_required
+def checkout_prata(request):
+    url = ABACATE_URL
+    payload = {
+        "frequency": "MULTIPLE_PAYMENTS",
+        "methods": ["PIX"],
+        "products": [
+            {
+                "externalId": "1",  # prata = 1
+                "name": "Assinatura Prata",
+                "description": "Plano Prata - 30 dias",
+                "quantity": 1,
+                "price": 8990  # centavos = R$89,90
+            }
+        ],
+        "returnUrl": "http://127.0.0.1:8000/assinatura/",
+        "completionUrl": "http://127.0.0.1:8000/assinatura/",
+        "customer": {
+            "name": request.user.get_full_name() or request.user.username,
+            "cellphone": "11999999999",
+            "email": "cliente@teste.com",
+            "taxId": "39053344705"
+        },
+        "allowCoupons": False,
+        "metadata": {"usuario_id": str(request.user.id)}
+    }
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        data = response.json()
+        if data.get("data") and "url" in data["data"]:
+            return redirect(data["data"]["url"])
+        else:
+            return HttpResponse(f"Erro ao criar checkout: {data}", status=response.status_code)
+    except Exception as e:
+        return HttpResponse(f"Erro inesperado: {e}", status=500)
+
+@login_required
+def checkout_ouro(request):
+    url = ABACATE_URL
+    payload = {
+        "frequency": "MULTIPLE_PAYMENTS",
+        "methods": ["PIX"],
+        "products": [
+            {
+                "externalId": "2",  # ouro = 2
+                "name": "Assinatura Ouro",
+                "description": "Plano Ouro - 30 dias",
+                "quantity": 1,
+                "price": 11990  # centavos = R$119,90
+            }
+        ],
+        "returnUrl": "http://127.0.0.1:8000/assinatura/",
+        "completionUrl": "http://127.0.0.1:8000/assinatura/",
+        "customer": {
+            "name": request.user.get_full_name() or request.user.username,
+            "cellphone": "11999999999",
+            "email": "cliente@teste.com",
+            "taxId": "39053344705"
+        },
+        "allowCoupons": False,
+        "metadata": {"usuario_id": str(request.user.id)}
+    }
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        data = response.json()
+        if data.get("data") and "url" in data["data"]:
+            return redirect(data["data"]["url"])
+        else:
+            return HttpResponse(f"Erro ao criar checkout: {data}", status=response.status_code)
+    except Exception as e:
+        return HttpResponse(f"Erro inesperado: {e}", status=500)
+
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET") or getattr
+
+@csrf_exempt
+def abacatepay_webhook(request):
+    # Valida o secret
+    secret = request.GET.get("secret") or request.GET.get("webhookSecret")
+    if secret != WEBHOOK_SECRET:
+        return JsonResponse({"error": "invalid secret"}, status=401)
+
+    # Lê o JSON enviado pelo AbacatePay
+    try:
+        payload = json.loads(request.body)
+
+        print("\n===== WEBHOOK RECEBIDO =====")
+        print(json.dumps(payload, indent=4))
+        print("============================\n")
+
+    except Exception:
+        return JsonResponse({"error": "invalid json"}, status=400)
+
+    # Só processa pagamento confirmado
+    if payload.get("event") != "billing.paid":
+        return JsonResponse({"status": "ignored", "reason": "not billing.paid"}, status=200)
+
+    billing = payload["data"]["billing"]
+    products = billing.get("products", [])
+    metadata = billing.get("metadata", {})
+
+    # Pega usuário_id do metadata (o mais importante!)
+    usuario_id = metadata.get("usuario_id")
+    if not usuario_id:
+        print("⚠️ metadata.usuario_id não veio no payload!")
+        return JsonResponse({"status": "ignored", "reason": "no usuario_id"}, status=200)
+
+    # Acha o usuário
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+    except Usuario.DoesNotExist:
+        return JsonResponse({"status": "ignored", "reason": "usuario_not_found"}, status=200)
+
+    # Pega externalId para saber qual plano foi comprado
+    external_id = None
+    if products:
+        external_id = products[0].get("externalId")
+
+    # Mapea externalId → plano
+    plano = None
+    if str(external_id) == "1":
+        plano = "prata"
+    elif str(external_id) == "2":
+        plano = "ouro"
+    else:
+        plano = "freemium"  # fallback
+
+    # Cria ou atualiza assinatura
+    assinatura, created = Assinatura.objects.update_or_create(
+        usuario=usuario,
+        defaults={
+            "plano": plano,
+            "status": "ativo",
+            "data_inicio": timezone.localdate(),
+            "data_fim": None  # ignorando expiração
+        }
+    )
+
+    return JsonResponse({"status": "saved", "plano": plano}, status=200)

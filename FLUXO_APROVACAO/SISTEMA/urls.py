@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import login_view, home_view, logout_view, criar_usuario, listar_usuarios, editar_usuario, deletar_usuario, listar_setores, criar_setor, editar_setor, deletar_setor, listar_modelos_fluxo, criar_modelos_fluxo, excluir_modelos_fluxo, listar_instancias_fluxo, criar_instancia_fluxo, excluir_instancias_fluxo, mover_etapa, detalhar_instancia_fluxo
+from .views import login_view, home_view, logout_view, criar_usuario, listar_usuarios, editar_usuario, deletar_usuario, listar_setores, criar_setor, editar_setor, deletar_setor, listar_modelos_fluxo, criar_modelos_fluxo, excluir_modelos_fluxo, listar_instancias_fluxo, criar_instancia_fluxo, excluir_instancias_fluxo, mover_etapa, detalhar_instancia_fluxo, assinatura_view, checkout_ouro, checkout_prata, abacatepay_webhook
 
 urlpatterns = [
     path('login/', login_view, name='login'),
@@ -21,5 +21,10 @@ urlpatterns = [
     path('fluxos/instancias/excluir/<int:id>/', excluir_instancias_fluxo, name='excluir_instancias_fluxo'),
     path('fluxos/instancias/<int:instancia_id>/mover/<int:etapa_id>/', mover_etapa, name='mover_etapa'),
     path('fluxos/instancias/<int:id>/', detalhar_instancia_fluxo, name='detalhar_instancia_fluxo'),
+    path('assinatura/', assinatura_view, name='assinatura_view'),
+    path('checkout/prata/', checkout_prata, name='checkout_prata'),
+    path('checkout/ouro/', checkout_ouro, name='checkout_ouro'),
+    path("webhook/abacatepay/", abacatepay_webhook, name="abacatepay_webhook"),
+
  
 ]

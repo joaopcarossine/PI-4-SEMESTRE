@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..800&display=swap');
+
+        .planos-container {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            align-items: stretch;
+            flex-wrap: nowrap;
+            /* impede de quebrar linha */
+            padding: 10px;
+        }
+
+        .planos-container .card {
+            min-width: 280px;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% include 'sidebar.html' %}
+    <div class="main-content">
+        <div class="container mt-4">
+
+            <h2 class="text-center mb-5">Escolha seu Plano</h2>
+
+            <!-- 🔥 AQUI: container que deixa tudo lado a lado -->
+            <div class="planos-container">
+
+                <!-- Plano Prata -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h3>Prata</h3>
+                        <p>Acesso ao plano Prata.</p>
+                        <h4 class="text-primary">R$ 89,90 / mês</h4>
+
+                        <form action="{% url 'checkout_prata' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary w-100 mt-3">
+                                Assinar Prata
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Plano Ouro -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h3>Ouro</h3>
+                        <p>Acesso ao plano Ouro.</p>
+                        <h4 class="text-warning">R$ 119,90 / mês</h4>
+
+                        <form action="{% url 'checkout_ouro' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning w-100 text-white mt-3">
+                                Assinar Ouro
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Plano Diamante -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h3>Diamante</h3>
+                        <p>Plano corporativo com suporte exclusivo.</p>
+                        <h4 class="text-dark">Sob consulta</h4>
+
+                        <a href="https://wa.me/551199999999999?text=Olá!%20Quero%20saber%20sobre%20o%20Plano%20Diamante!"
+                            target="_blank" class="btn btn-dark w-100 mt-3">
+                            Contate-nos
+                        </a>
+                    </div>
+                </div>
+
+            </div> <!-- fim planos-container -->
+
+        </div>
+    </div>
+
+</body>
+
+</html>

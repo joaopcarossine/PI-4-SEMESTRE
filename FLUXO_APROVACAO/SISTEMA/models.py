@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
+from datetime import timedelta
 
 # ==========================================================
 # ESTRUTURA ORGANIZACIONAL
@@ -21,8 +22,7 @@ class Setor(models.Model):
 
 
 class Usuario(AbstractUser):
-    """Usuário customizado com vínculo a setor e perfil."""
-    setor = models.ForeignKey(Setor, on_delete=models.SET_NULL, null=True, blank=True)
+    setor = models.ForeignKey("Setor", on_delete=models.SET_NULL, null=True, blank=True)
     perfil = models.CharField(
         max_length=20,
         choices=[("administrador", "Administrador"), ("padrao", "Padrão")],
@@ -30,21 +30,8 @@ class Usuario(AbstractUser):
     )
     criado_em = models.DateTimeField(default=timezone.now)
 
-    # Corrige conflitos de nomes reversos do Django
-    groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='usuarios_sistema',
-        blank=True,
-        help_text='Grupos do Django.',
-        verbose_name='groups',
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='usuarios_sistema',
-        blank=True,
-        help_text='Permissões específicas.',
-        verbose_name='user permissions',
-    )
+    groups = models.ManyToManyField('auth.Group', related_name='usuarios_sistema', blank=True)
+    user_permissions = models.ManyToManyField('auth.Permission', related_name='usuarios_sistema', blank=True)
 
     class Meta:
         db_table = "usuarios"
@@ -54,15 +41,15 @@ class Usuario(AbstractUser):
     def __str__(self):
         return self.username
 
-
 # ==========================================================
 # ASSINATURA / LICENCIAMENTO
 # ==========================================================
 class Assinatura(models.Model):
-    """Histórico de assinaturas do usuário."""
     PLANO_CHOICES = [
         ("freemium", "Freemium"),
-        ("premium", "Premium"),
+        ("prata", "Prata"),
+        ("ouro", "Ouro"),
+        ("diamante", "Diamante"),
     ]
     STATUS_CHOICES = [
         ("ativo", "Ativo"),
@@ -84,6 +71,35 @@ class Assinatura(models.Model):
 
     def __str__(self):
         return f"{self.usuario.username} - {self.plano} ({self.status})"
+
+    def is_active(self):
+        if self.status != "ativo":
+            return False
+        if not self.data_fim:
+            return True
+        return self.data_fim >= timezone.localdate()
+
+    def expire(self):
+        self.plano = "freemium"
+        self.status = "inativo"
+        self.data_fim = None
+        self.save()
+
+class Pagamento(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name="pagamentos")
+    assinatura = models.ForeignKey(Assinatura, on_delete=models.SET_NULL, null=True, blank=True, related_name="pagamentos")
+    billing_id = models.CharField(max_length=255, null=True, blank=True)
+    event_id = models.CharField(max_length=255, null=True, blank=True)
+    amount = models.IntegerField()  # em centavos
+    method = models.CharField(max_length=50, blank=True, null=True)
+    fee = models.IntegerField(null=True, blank=True)
+    received_at = models.DateTimeField(default=timezone.now)
+    raw_payload = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        db_table = "pagamentos"
+        verbose_name = "Pagamento"
+        verbose_name_plural = "Pagamentos"
 
 
 # ==========================================================

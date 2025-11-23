@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ABACATEPAY_API_KEY = os.getenv('ABACATEPAY_API_KEY')
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +32,11 @@ SECRET_KEY = 'django-insecure-ywqwd9@c#7+&cuafd6(fh22_gs4mn)+#5he*jnp7)t+xhlflkl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '.ngrok-free.dev',
+]
 
 
 # Application definition
