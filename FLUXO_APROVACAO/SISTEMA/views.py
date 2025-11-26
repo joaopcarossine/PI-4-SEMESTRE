@@ -14,6 +14,7 @@ from django.http import HttpResponse
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from datetime import timedelta
 
 ## Login
 def login_view(request):
@@ -353,7 +354,19 @@ API_KEY = os.getenv("ABACATEPAY_API_KEY") or getattr(settings, "ABACATEPAY_API_K
 
 @login_required
 def assinatura_view(request):
-    return render(request, 'assinaturas.html')  
+    assinatura = request.user.assinaturas.filter(status="ativo").order_by('-data_inicio').first()
+
+    dias_restantes = None
+    if assinatura:
+        # Cada plano dura 30 dias
+        expiracao = assinatura.data_inicio + timedelta(days=30)
+        hoje = timezone.localdate()
+        dias_restantes = max((expiracao - hoje).days, 0)
+
+    return render(request, 'assinaturas.html', {
+        "assinatura": assinatura,
+        "dias_restantes": dias_restantes
+    })
 
 @login_required
 def checkout_prata(request):
@@ -435,7 +448,7 @@ def checkout_ouro(request):
     except Exception as e:
         return HttpResponse(f"Erro inesperado: {e}", status=500)
 
-WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET") or getattr
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET") or getattr(settings, "WEBHOOK_SECRET", None)
 
 @csrf_exempt
 def abacatepay_webhook(request):

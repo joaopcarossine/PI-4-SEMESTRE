@@ -38,6 +38,9 @@ class Usuario(AbstractUser):
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
 
+    def assinatura_atual(self):
+        return self.assinaturas.filter(status="ativo").order_by('-data_inicio').first()
+
     def __str__(self):
         return self.username
 
